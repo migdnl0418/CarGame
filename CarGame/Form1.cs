@@ -15,6 +15,7 @@ namespace CarGame
     {
         private Random rnd = new Random();
         private bool Collide = false;
+        private bool gameOver = false;
 
         //ROAD
         private Timer timerRoad;
@@ -314,6 +315,7 @@ namespace CarGame
 
                 if (playerRect.IntersectsWith(enemyRect))
                 {
+                    gameOver = true;
                     Collide = true;
                     Invalidate();
                     return;
@@ -326,6 +328,23 @@ namespace CarGame
                 }
 
             }
+        }
+
+        private void RestartGame()
+        {
+            gameOver = false;
+            roadY = 0;
+            speed = normalSpeed;
+            totalDistanceMeters = 0f;
+
+            playerX = lanes[1];
+            targetLane = 1;
+            currentLane = 1;
+
+            for (int i = 0; i < MAX_ENEMIES; i++)
+                enemyActive[i] = false;
+
+            timerRoad.Start();
         }
 
         //----------------------------- UPDATE METHODS -------------------------
@@ -454,6 +473,9 @@ namespace CarGame
         //--------------------------- EVENT HANDLERS ---------------------------
         private void TimerRoad_Tick(object sender, EventArgs e)
         {
+            if (gameOver)
+                return;
+
             UpdateSpeed();
             UpdateRoad();
             UpdatePlayerPosition();
@@ -464,6 +486,14 @@ namespace CarGame
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
+            if (gameOver)
+            {
+                if ((e.KeyCode == Keys.Escape) ||
+                    (e.KeyCode == Keys.R) || (e.KeyCode == Keys.Enter))
+                    RestartGame();
+                return;
+            }
+
             if (choosingCar)
                 return;
 
@@ -509,6 +539,9 @@ namespace CarGame
                 DrawCarSelection(e.Graphics);
             else
                 DrawPlayer(e.Graphics);
+
+            if (gameOver)
+                DrawGameOver(e.Graphics);
 
             DrawDebugInfo(e.Graphics);
         }
@@ -624,5 +657,36 @@ namespace CarGame
                 g.DrawString(debugtext, font, Brushes.Yellow, 0, ClientSize.Height - 100);
             }
         }
+
+        private void DrawGameOver(Graphics g)
+        {
+            using (Brush overlay = new SolidBrush(Color.FromArgb(180, 0, 0, 0)))
+                g.FillRectangle(overlay, ClientRectangle);
+
+            using (Font title = new Font("Arial", 28, FontStyle.Bold))
+            using (Font subtitle = new Font("Arial", 14, FontStyle.Regular))
+            {
+                string gameOverText = "GAME OVER";
+                string retryText = "Press R to Restart";
+
+                SizeF titleSize = g.MeasureString(gameOverText, title);
+                SizeF retrySize = g.MeasureString(retryText, subtitle);
+
+                g.DrawString(
+                    gameOverText,
+                    title,
+                    Brushes.Red,
+                    (ClientSize.Width - titleSize.Width) / 2,
+                    220);
+
+                g.DrawString(
+                    retryText,
+                    subtitle,
+                    Brushes.White,
+                    (ClientSize.Width - retrySize.Width) / 2,
+                    280);
+            }
+        }
+
     }
 }
