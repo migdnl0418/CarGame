@@ -255,6 +255,26 @@ namespace CarGame
         private void SpawnEnemy()
         {
             SpawnInLane(rnd.Next(4), -enemyHeight);
+
+            int[] pattern;
+            int km =(int)(totalDistanceMeters / 1000);
+
+            if (km<=1)
+                SpawnInLane(rnd.Next(4), -enemyHeight);
+            else if (km <= 3)
+            {
+                pattern = trafficPatterns[rnd.Next(8)];
+                foreach (int lane in pattern)
+                    SpawnInLane(lane, -enemyHeight);
+            }
+
+            else
+            {
+                pattern = trafficPatterns[trafficPatterns.Length];
+                foreach (int lane in pattern)
+                    SpawnInLane(lane, -enemyHeight);
+            }
+
         }
 
         private void SpawnInLane(int lane, float y)
@@ -546,7 +566,7 @@ namespace CarGame
             if (gameOver)
                 DrawGameOver(e.Graphics);
 
-           DrawDebugInfo(e.Graphics);
+           //DrawDebugInfo(e.Graphics);
         }
 
 
